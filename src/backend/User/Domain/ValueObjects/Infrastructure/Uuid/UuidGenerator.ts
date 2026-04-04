@@ -1,4 +1,4 @@
-import type {IUuidGenerator} from "./IUuidGenerator"
+import type {IUuidGenerator} from "./IUuidGenerator.ts"
 
 export class UuidGenerator implements IUuidGenerator {
     generate(): string {

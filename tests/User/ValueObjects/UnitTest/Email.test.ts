@@ -1,6 +1,6 @@
 import {describe, it, expect} from "bun:test";
-import {EmailValidator} from "../../../../src/backend/User/ValueObjects/Infrastructure/Validator/EmailValidator.ts";
-import {Email} from "../../../../src/backend/User/ValueObjects/Email.ts";
+import {EmailValidator} from "../../../../src/backend/User/Domain/ValueObjects/Infrastructure/Validator/EmailValidator.ts";
+import {Email} from "../../../../src/backend/User/Domain/ValueObjects/Email.ts";
 
 const validator = new EmailValidator();
 

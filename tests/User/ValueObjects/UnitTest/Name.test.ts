@@ -1,5 +1,5 @@
 import {it, describe, expect} from "bun:test";
-import {Name} from "../../../../src/backend/User/ValueObjects/Name.ts";
+import {Name} from "../../../../src/backend/User/Domain/ValueObjects/Name.ts";
 
 describe("Value Object: Name", () => {
     it("Should create a valid Name", () => {

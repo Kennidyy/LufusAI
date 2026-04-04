@@ -1,6 +1,6 @@
 import {describe, it, expect} from "bun:test";
-import {Password} from "../../../../src/backend/User/ValueObjects/Password.ts";
-import { Argon2IdPasswordHash } from "../../../../src/backend/User/ValueObjects/Infrastructure/Cryptography/Argon2IdPasswordHash.ts";
+import {Password} from "../../../../src/backend/User/Domain/ValueObjects/Password.ts";
+import { Argon2IdPasswordHash } from "../../../../src/backend/User/Domain/ValueObjects/Infrastructure/Cryptography/Argon2IdPasswordHash.ts";
 
 const hashPassword = new Argon2IdPasswordHash;
 

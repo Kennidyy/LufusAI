@@ -1,7 +1,7 @@
 import {describe, it, expect} from "bun:test";
-import {ID} from "../../../../src/backend/User/ValueObjects/ID.ts";
-import type {IUuidGenerator} from "../../../../src/backend/User/ValueObjects/Infrastructure/Uuid/IUuidGenerator.ts";
-import {UuidGenerator} from "../../../../src/backend/User/ValueObjects/Infrastructure/Uuid/UuidGenerator.ts";
+import {ID} from "../../../../src/backend/User/Domain/ValueObjects/ID.ts";
+import type {IUuidGenerator} from "../../../../src/backend/User/Domain/ValueObjects/Infrastructure/Uuid/IUuidGenerator.ts";
+import {UuidGenerator} from "../../../../src/backend/User/Domain/ValueObjects/Infrastructure/Uuid/UuidGenerator.ts";
 
 
 describe("Value Object: ID", (): void => {
