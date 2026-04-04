@@ -1,15 +1,18 @@
 {
   "name": "lufus_project",
   "module": "index.ts",
-  "type": "module",
-  "private": true,
   "devDependencies": {
     "@types/bun": "latest"
   },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "private": true,
   "scripts": {
     "dev": "bun run src/index.ts"
   },
-  "peerDependencies": {
-    "typescript": "^5"
+  "type": "module",
+  "dependencies": {
+    "validator": "^13.15.35"
   }
 }
