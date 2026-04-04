@@ -1,7 +1,7 @@
 import {it, describe, expect} from "bun:test";
 import {Name} from "../../../../src/backend/User/ValueObjects/Name.ts";
 
-describe("Value Object Validation: Name", () => {
+describe("Value Object: Name", () => {
     it("Should create a valid Name", () => {
         const userName = Name.create("Jorge");
 
