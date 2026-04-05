@@ -1,34 +1,29 @@
-import {it, describe, expect} from "bun:test";
-import {Name} from "../../../../src/backend/User/Domain/ValueObjects/Name.ts";
+import { describe, it, expect } from "bun:test";
+import { Name } from "../../../domain/value-objects/Name.ts";
 
 describe("Value Object: Name", () => {
     it("Should create a valid name", () => {
         const userName = Name.create("Jorge");
-
         expect(userName.value).toBe("Jorge");
     });
 
     it("Should trim whitespace", () => {
         const userName = Name.create("       Mauricio      ");
-
         expect(userName.value).toBe("Mauricio");
     });
 
     it("Should accept names with hyphens", () => {
         const userName = Name.create("Mary-Jane");
-
         expect(userName.value).toBe("Mary-Jane");
     });
 
     it("Should accept names with apostrophes", () => {
         const userName = Name.create("O'Connor");
-
         expect(userName.value).toBe("O'Connor");
     });
 
     it("Should accept accented characters", () => {
         const userName = Name.create("José António");
-
         expect(userName.value).toBe("José António");
     });
 
@@ -41,7 +36,7 @@ describe("Value Object: Name", () => {
     });
 
     it("Should throw for name exceeding 50 characters", () => {
-        expect(() => Name.create("Maximilian Alexandre Fernando Gabriel Theodor Sebastiano")).toThrow("Name cannot exceed 50 characters");
+        expect(() => Name.create("a".repeat(51))).toThrow("Name cannot exceed 50 characters");
     });
 
     it("Should throw for name with numbers", () => {
@@ -70,9 +65,8 @@ describe("Value Object: Name", () => {
 
     describe("Comparison", () => {
         it("Should compare two names correctly", () => {
-            const name1: Name = Name.create("Alexandre");
-            const name2: Name = Name.create("Sebastiano");
-
+            const name1 = Name.create("Alexandre");
+            const name2 = Name.create("Sebastiano");
             expect(name1.equals(name2)).toBe(false);
             expect(name1.equals(name1)).toBe(true);
         });

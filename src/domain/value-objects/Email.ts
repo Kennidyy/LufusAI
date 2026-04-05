@@ -1,4 +1,4 @@
-import type {IEmailValidator} from "./Infrastructure/Validator/IEmailValidator.ts";
+import type { IEmailValidator } from "./IEmailValidator.ts";
 
 export class Email {
     readonly #value: string;

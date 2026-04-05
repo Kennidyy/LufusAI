@@ -1,4 +1,4 @@
-import type {IUuidGenerator} from "./Infrastructure/Uuid/IUuidGenerator.ts";
+import type { IUuidGenerator } from "./IUuidGenerator.ts";
 
 export class ID {
     readonly #value: string;

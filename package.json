@@ -1,6 +1,9 @@
 {
   "name": "lufus_project",
   "module": "index.ts",
+  "imports": {
+    "@/*": "./src/*"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },

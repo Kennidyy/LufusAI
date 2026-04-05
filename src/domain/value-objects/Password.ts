@@ -1,4 +1,4 @@
-import type {IPasswordHash} from "./Infrastructure/Cryptography/IPasswordHash.ts";
+import type { IPasswordHash } from "./IPasswordHash.ts";
 
 export class Password {
     readonly #value: string;
