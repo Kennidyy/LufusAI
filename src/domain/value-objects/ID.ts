@@ -20,6 +20,13 @@ export class ID {
         return new ID(generatedId);
     }
 
+    static restore(value: string): ID {
+        if (!value || value.length === 0) {
+            throw new Error("ID cannot be empty");
+        }
+        return new ID(value);
+    }
+
     get value(): string {
         return this.#value;
     }
