@@ -34,4 +34,8 @@ export class Email {
     equals(other: Email): boolean {
         return this.#value === other.#value;
     }
+
+    change(newValue: string, validator: IEmailValidator): Email {
+        return Email.create(newValue, validator);
+    }
 }

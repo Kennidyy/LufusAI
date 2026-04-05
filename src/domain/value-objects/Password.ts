@@ -26,6 +26,14 @@ export class Password {
         return this.#value === other.#value;
     }
 
+    async change(plainText: string, hash: IPasswordHash): Promise<Password> {
+        return Password.create(plainText, hash);
+    }
+
+    static fromHashed(hashedValue: string): Password {
+        return new Password(hashedValue);
+    }
+
     private static validate(input: string): { isValid: boolean; error?: string } {
         if (!input) {
             return { isValid: false, error: "Password is required" };

@@ -38,4 +38,8 @@ export class Name {
     equals(other: Name): boolean {
         return this.#value === other.#value;
     }
+
+    change(newValue: string): Name {
+        return Name.create(newValue);
+    }
 }
