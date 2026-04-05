@@ -1,19 +1,30 @@
 import type {IEmailValidator} from "./Infrastructure/Validator/IEmailValidator.ts";
 
 export class Email {
-    #value: string;
+    readonly #value: string;
 
     private constructor(value: string) {
         this.#value = value;
     }
 
     static create(input: string, validator: IEmailValidator): Email {
-        if(!input) { throw new Error("Email field can't be empty") }
-        if (!validator.isValid(input)) {
-            throw new Error("Email is not valid");
+        const trimmed = input.trim();
+        
+        if (!trimmed) {
+            throw new Error("Email is required");
+        }
+        
+        if (trimmed.length > 254) {
+            throw new Error("Email exceeds maximum length of 254 characters");
+        }
+        
+        const normalized = trimmed.toLowerCase();
+        
+        if (!validator.isValid(normalized)) {
+            throw new Error("Invalid email format");
         }
 
-        return new Email(input);
+        return new Email(normalized);
     }
 
     get value(): string {
@@ -21,6 +32,6 @@ export class Email {
     }
 
     equals(other: Email): boolean {
-        return this.#value === other.value;
+        return this.#value === other.#value;
     }
 }

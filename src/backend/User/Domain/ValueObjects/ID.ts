@@ -1,14 +1,23 @@
 import type {IUuidGenerator} from "./Infrastructure/Uuid/IUuidGenerator.ts";
 
 export class ID {
-    readonly #value!: string;
+    readonly #value: string;
 
     private constructor(id: string) {
+        if (!id || id.length === 0) {
+            throw new Error("ID cannot be empty");
+        }
         this.#value = id;
     }
 
     static create(generator: IUuidGenerator): ID {
-        return new ID(generator.generate());
+        const generatedId = generator.generate();
+        
+        if (!generatedId) {
+            throw new Error("UUID generator returned invalid value");
+        }
+        
+        return new ID(generatedId);
     }
 
     get value(): string {
@@ -16,6 +25,6 @@ export class ID {
     }
 
     equals(other: ID): boolean {
-        return this.#value === other.value;
+        return this.#value === other.#value;
     }
 }

@@ -1,17 +1,21 @@
 import type {IPasswordHash} from "./Infrastructure/Cryptography/IPasswordHash.ts";
 
 export class Password {
-    #value: string;
+    readonly #value: string;
 
-    private constructor(newValue: string) {
-        this.#value = newValue;
+    private constructor(hashedValue: string) {
+        this.#value = hashedValue;
     }
 
-    static async create(input: string, hash: IPasswordHash): Promise<Password> {
-        this.validate(input);
-        const password: string = await hash.hashPassword(input)
+    static async create(plainText: string, hash: IPasswordHash): Promise<Password> {
+        const validation = Password.validate(plainText);
+        if (!validation.isValid) {
+            throw new Error(validation.error!);
+        }
+        
+        const hashedPassword: string = await hash.hashPassword(plainText);
 
-        return new Password(password);
+        return new Password(hashedPassword);
     }
 
     get value(): string {
@@ -19,15 +23,43 @@ export class Password {
     }
 
     equals(other: Password): boolean {
-        return this.#value === other.value;
+        return this.#value === other.#value;
     }
 
-    private static validate(input: string): void {
-        if (!input) {throw new Error("Password cannot be empty");}
-        if (input.length < 8) {throw new Error("Password should be at least 8 characters long");}
-        if (!/[a-z]/.test(input)) {throw new Error("Password should contain at least one lowercase character");}
-        if (!/[A-Z]/.test(input)) {throw new Error("Password should contain at least one uppercase character");}
-        if (!/[0-9]/.test(input)) {throw new Error("Password should contain at least one number character");}
-        if (!/[!@#$%^&*(),.?":{}|<>]/.test(input)) {throw new Error("Password should contain at least one symbol character");}
+    private static validate(input: string): { isValid: boolean; error?: string } {
+        if (!input) {
+            return { isValid: false, error: "Password is required" };
+        }
+        
+        if (input.length < 8) {
+            return { isValid: false, error: "Password must be at least 8 characters" };
+        }
+        
+        if (input.length > 128) {
+            return { isValid: false, error: "Password exceeds maximum length of 128 characters" };
+        }
+        
+        if (!/[a-z]/.test(input)) {
+            return { isValid: false, error: "Password must contain at least one lowercase letter" };
+        }
+        
+        if (!/[A-Z]/.test(input)) {
+            return { isValid: false, error: "Password must contain at least one uppercase letter" };
+        }
+        
+        if (!/[0-9]/.test(input)) {
+            return { isValid: false, error: "Password must contain at least one number" };
+        }
+        
+        if (!/[!@#$%^&*(),.?":{}|<>]/.test(input)) {
+            return { isValid: false, error: "Password must contain at least one special character" };
+        }
+        
+        const uniqueChars = new Set(input).size;
+        if (uniqueChars < input.length * 0.5) {
+            return { isValid: false, error: "Password contains too many repeated characters" };
+        }
+
+        return { isValid: true };
     }
 }
