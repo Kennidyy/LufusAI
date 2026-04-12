@@ -16,4 +16,15 @@ export class Argon2IdPasswordHash implements IPasswordHash {
             timeCost: 3,
         });
     }
+
+    async verify(plainText: string, hashed: string): Promise<boolean> {
+        const pepper: string | undefined = process.env.PASSWORD_PEPPER;
+
+        if (!pepper) {
+            throw new Error(".env PASSWORD_PEPPER is undefined");
+        }
+
+        const password: string = plainText + pepper;
+        return await Bun.password.verify(password, hashed);
+    }
 }
