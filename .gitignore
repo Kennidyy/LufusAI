@@ -1,34 +1,62 @@
-# dependencies (bun install)
-node_modules
+# ============================================
+# PRODUCTION - DO NOT COMMIT
+# ============================================
 
-# output
-out
-dist
+# Environment variables (secrets)
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+drizzle.config.json
+
+# Session files
+.lufus-session
+*.session
+
+# ============================================
+# DEVELOPMENT - DO NOT COMMIT
+# ============================================
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+out/
 *.tgz
 
-# code coverage
-coverage
+# Test coverage
+coverage/
 *.lcov
 
-# logs
-logs
-_.log
-report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
+# Logs
+logs/
+*.log
+bun-debug-logs/
 
-# dotenv environment variable files
-.env
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
-
-# caches
+# Caches
 .eslintcache
-.cache
+.cache/
 *.tsbuildinfo
+.turbo/
 
-# IntelliJ based IDEs
-.idea
+# IDE
+.idea/
+*.swp
+*.swo
+*.swn
+.vscode/
+*.sublime-*
 
-# Finder (MacOS) folder config
+# OS
 .DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+
+# ============================================
+# EXAMPLES - COPY TO .env BEFORE USE
+# ============================================
+!.env.example
