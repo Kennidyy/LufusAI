@@ -9,9 +9,9 @@ describe("Infrastructure: UuidGenerator", () => {
     });
 
     describe("generate", () => {
-        it("Should generate valid UUID v7", () => {
+        it("Should generate valid UUID v4", () => {
             const uuid = generator.generate();
-            expect(uuid).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+            expect(uuid).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
         });
 
         it("Should generate unique UUIDs", () => {

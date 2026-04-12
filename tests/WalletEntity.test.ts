@@ -4,10 +4,12 @@ import { ID } from "../src/domain/value-objects/ID.ts";
 import { Points } from "../src/domain/value-objects/Points.ts";
 import type { IUuidGenerator } from "../src/domain/value-objects/IUuidGenerator.ts";
 
+const VALID_UUID = "550e8400-e29b-41d4-a716-446655440000";
+const VALID_UUID_2 = "660e8400-e29b-41d4-a716-446655440000";
+
 class MockUuidGenerator implements IUuidGenerator {
-    private counter = 0;
     generate(): string {
-        return `test-uuid-${++this.counter}`;
+        return crypto.randomUUID();
     }
 }
 
@@ -17,15 +19,15 @@ describe("Entity: Wallet", () => {
 
     beforeEach(() => {
         uuidGenerator = new MockUuidGenerator();
-        userId = ID.restore("test-user-id");
+        userId = ID.restore(VALID_UUID);
     });
 
     describe("Creation", () => {
         it("Should create wallet with zero points", () => {
             const wallet = Wallet.create(userId, uuidGenerator);
             expect(wallet.points.value).toBe(0);
-            expect(wallet.userId.value).toBe("test-user-id");
-            expect(wallet.id.value).toBe("test-uuid-1");
+            expect(wallet.userId.value).toBe(VALID_UUID);
+            expect(wallet.id.value).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
         });
 
         it("Should set createdAt and updatedAt to current time", () => {
@@ -42,14 +44,14 @@ describe("Entity: Wallet", () => {
 
     describe("Restore", () => {
         it("Should restore wallet with existing data", () => {
-            const id = ID.restore("wallet-id");
+            const id = ID.restore(VALID_UUID_2);
             const createdAt = new Date("2024-01-01");
             const updatedAt = new Date("2024-01-02");
             const points = Points.create(100);
 
             const wallet = Wallet.restore(id, userId, points, createdAt, updatedAt);
 
-            expect(wallet.id.value).toBe("wallet-id");
+            expect(wallet.id.value).toBe(VALID_UUID_2);
             expect(wallet.points.value).toBe(100);
             expect(wallet.createdAt).toEqual(createdAt);
             expect(wallet.updatedAt).toEqual(updatedAt);

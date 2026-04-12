@@ -6,6 +6,8 @@ import { Password } from "../src/domain/value-objects/Password.ts";
 import { Name } from "../src/domain/value-objects/Name.ts";
 import type { IEmailValidator } from "../src/domain/value-objects/IEmailValidator.ts";
 
+const VALID_UUID = "550e8400-e29b-41d4-a716-446655440000";
+
 class MockEmailValidator implements IEmailValidator {
     isValid(_input: string): boolean {
         return true;
@@ -20,7 +22,7 @@ describe("Entity: User", () => {
     let validator: IEmailValidator;
 
     beforeEach(() => {
-        id = ID.restore("test-user-id");
+        id = ID.restore(VALID_UUID);
         validator = new MockEmailValidator();
         email = Email.create("test@test.com", validator);
         password = Password.fromHashed("hashed_password");
@@ -30,7 +32,7 @@ describe("Entity: User", () => {
     describe("Creation", () => {
         it("Should create user with valid data", () => {
             const user = User.create(id, email, password, name);
-            expect(user.id.value).toBe("test-user-id");
+            expect(user.id.value).toBe(VALID_UUID);
             expect(user.email.value).toBe("test@test.com");
             expect(user.name.value).toBe("John Doe");
             expect(user.createdAt).toBeInstanceOf(Date);
@@ -55,7 +57,7 @@ describe("Entity: User", () => {
             const updatedAt = new Date("2024-01-02");
             const user = User.restore(id, email, password, name, createdAt, updatedAt);
 
-            expect(user.id.value).toBe("test-user-id");
+            expect(user.id.value).toBe(VALID_UUID);
             expect(user.createdAt).toEqual(createdAt);
             expect(user.updatedAt).toEqual(updatedAt);
         });

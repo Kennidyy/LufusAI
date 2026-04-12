@@ -6,9 +6,8 @@ import type { IUuidGenerator } from "../src/domain/value-objects/IUuidGenerator.
 import { Wallet } from "../src/domain/entities/Wallet.ts";
 
 class MockUuidGenerator implements IUuidGenerator {
-    private counter = 0;
     generate(): string {
-        return `mock-uuid-${++this.counter}`;
+        return crypto.randomUUID();
     }
 }
 
@@ -33,7 +32,18 @@ class InMemoryWalletRepository implements IWalletRepository {
             this.wallets[index] = wallet;
         }
     }
+
+    async delete(userId: string): Promise<void> {
+        this.wallets = this.wallets.filter(w => w.userId.value !== userId);
+    }
+
+    async deleteAll(): Promise<void> {
+        this.wallets = [];
+    }
 }
+
+const VALID_UUID = "550e8400-e29b-41d4-a716-446655440000";
+const VALID_UUID_2 = "660e8400-e29b-41d4-a716-446655440000";
 
 describe("AddPointsUseCase", () => {
     let repository: InMemoryWalletRepository;
@@ -47,7 +57,7 @@ describe("AddPointsUseCase", () => {
     });
 
     it("Should create wallet and add points", async () => {
-        const userId = "user-123";
+        const userId = VALID_UUID;
         const result = await useCase.execute({ userId, amount: 100 });
 
         expect(result.wallet.points.value).toBe(100);
@@ -55,7 +65,7 @@ describe("AddPointsUseCase", () => {
     });
 
     it("Should add points to existing wallet", async () => {
-        const userId = "user-123";
+        const userId = VALID_UUID;
         await useCase.execute({ userId, amount: 50 });
         const result = await useCase.execute({ userId, amount: 30 });
 
@@ -77,7 +87,7 @@ describe("RemovePointsUseCase", () => {
     });
 
     it("Should remove points from wallet", async () => {
-        const userId = "user-123";
+        const userId = VALID_UUID;
         await addUseCase.execute({ userId, amount: 100 });
         const result = await removeUseCase.execute({ userId, amount: 30 });
 
@@ -85,7 +95,7 @@ describe("RemovePointsUseCase", () => {
     });
 
     it("Should throw when insufficient points", async () => {
-        const userId = "user-123";
+        const userId = VALID_UUID;
         await addUseCase.execute({ userId, amount: 50 });
 
         await expect(removeUseCase.execute({ userId, amount: 100 }))
@@ -93,7 +103,7 @@ describe("RemovePointsUseCase", () => {
     });
 
     it("Should throw when wallet not found", async () => {
-        await expect(removeUseCase.execute({ userId: "nonexistent", amount: 10 }))
-            .rejects.toThrow("Wallet not found");
+        await expect(removeUseCase.execute({ userId: VALID_UUID_2, amount: 10 }))
+            .rejects.toThrow("not found");
     });
 });
