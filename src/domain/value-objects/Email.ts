@@ -27,6 +27,25 @@ export class Email {
         return new Email(normalized);
     }
 
+    static restore(value: string): Email {
+        if (!value || !value.trim()) {
+            throw new Error("Email is required");
+        }
+        
+        const trimmed = value.trim().toLowerCase();
+        
+        if (trimmed.length > 254) {
+            throw new Error("Email exceeds maximum length of 254 characters");
+        }
+        
+        const emailRegex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
+        if (!emailRegex.test(trimmed)) {
+            throw new Error("Invalid email format");
+        }
+        
+        return new Email(trimmed);
+    }
+
     get value(): string {
         return this.#value;
     }

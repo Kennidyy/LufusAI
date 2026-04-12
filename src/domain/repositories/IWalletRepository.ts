@@ -5,4 +5,6 @@ export interface IWalletRepository {
     findByUserId(userId: string): Promise<Wallet | null>;
     findById(id: string): Promise<Wallet | null>;
     update(wallet: Wallet): Promise<void>;
+    delete(userId: string): Promise<void>;
+    deleteAll(): Promise<void>;
 }

@@ -1,19 +1,18 @@
 import type { IUuidGenerator } from "./IUuidGenerator.ts";
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export class ID {
     readonly #value: string;
 
     private constructor(id: string) {
-        if (!id || id.length === 0) {
-            throw new Error("ID cannot be empty");
-        }
         this.#value = id;
     }
 
     static create(generator: IUuidGenerator): ID {
         const generatedId = generator.generate();
         
-        if (!generatedId) {
+        if (!generatedId || !UUID_REGEX.test(generatedId)) {
             throw new Error("UUID generator returned invalid value");
         }
         
@@ -21,10 +20,15 @@ export class ID {
     }
 
     static restore(value: string): ID {
-        if (!value || value.length === 0) {
-            throw new Error("ID cannot be empty");
+        if (!value || !value.trim()) {
+            throw new Error("ID is required");
         }
-        return new ID(value);
+        
+        if (!UUID_REGEX.test(value)) {
+            throw new Error("Invalid UUID format");
+        }
+        
+        return new ID(value.trim().toLowerCase());
     }
 
     get value(): string {
