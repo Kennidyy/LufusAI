@@ -66,7 +66,8 @@ export class CreateUserCommand {
         const event = new UserCreatedEvent(
             result.user.id.value,
             result.user.email.value,
-            result.user.name.value
+            result.user.name.value,
+            this.uuidGenerator
         );
         await eventStore.append(event);
 
@@ -105,7 +106,8 @@ export class AddPointsCommand {
             input.userId,
             input.amount,
             result.wallet.points.value,
-            crypto.randomUUID()
+            crypto.randomUUID(),
+            this.uuidGenerator
         );
         await eventStore.append(event);
 
@@ -141,7 +143,8 @@ export class RemovePointsCommand {
             input.userId,
             input.amount,
             result.wallet.points.value,
-            crypto.randomUUID()
+            crypto.randomUUID(),
+            this.uuidGenerator
         );
         await eventStore.append(event);
 
@@ -184,7 +187,8 @@ export class TransferPointsCommand {
             input.fromUserId,
             input.toUserId,
             input.amount,
-            transactionId
+            transactionId,
+            this.uuidGenerator
         );
         await eventStore.append(event);
 
@@ -199,7 +203,8 @@ export class DeleteUserCommand {
 
     constructor(
         private userRepository: IUserRepository,
-        private walletRepository: IWalletRepository
+        private walletRepository: IWalletRepository,
+        private uuidGenerator: IUuidGenerator
     ) {}
 
     async execute(input: { userId: string }): Promise<CommandResult> {
@@ -218,7 +223,7 @@ export class DeleteUserCommand {
         const useCase = new DeleteUserUseCase(this.userRepository, this.walletRepository);
         await useCase.execute(input);
 
-        const event = new UserDeletedEvent(input.userId, user.email.value);
+        const event = new UserDeletedEvent(input.userId, user.email.value, this.uuidGenerator);
         await eventStore.append(event);
 
         this.log.info("User deleted via command", { userId: input.userId });

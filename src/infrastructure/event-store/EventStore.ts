@@ -21,11 +21,24 @@ export class EventStore {
             aggregateId: event.aggregateId 
         });
 
+        // Safely map event properties instead of casting the entire event
+        const eventData: Record<string, unknown> = {};
+        // Copy all enumerable properties from the event
+        for (const key in event) {
+            if (Object.prototype.hasOwnProperty.call(event, key)) {
+                // Skip the methods and focus on data properties
+                const value = (event as any)[key];
+                if (typeof value !== 'function') {
+                    eventData[key] = value;
+                }
+            }
+        }
+
         await db.insert(events).values({
             id: event.eventId,
             aggregateId: event.aggregateId,
             eventType: event.eventType,
-            eventData: event as unknown as Record<string, unknown>,
+            eventData,
             occurredAt: event.occurredAt,
             version: event.version
         });
@@ -36,14 +49,27 @@ export class EventStore {
 
         this.log.debug("Appending events", { count: eventsList.length });
 
-        const values = eventsList.map(e => ({
-            id: e.eventId,
-            aggregateId: e.aggregateId,
-            eventType: e.eventType,
-            eventData: e as unknown as Record<string, unknown>,
-            occurredAt: e.occurredAt,
-            version: e.version
-        }));
+        const values = eventsList.map(e => {
+            // Safely map event properties
+            const eventData: Record<string, unknown> = {};
+            for (const key in e) {
+                if (Object.prototype.hasOwnProperty.call(e, key)) {
+                    const value = (e as any)[key];
+                    if (typeof value !== 'function') {
+                        eventData[key] = value;
+                    }
+                }
+            }
+            
+            return {
+                id: e.eventId,
+                aggregateId: e.aggregateId,
+                eventType: e.eventType,
+                eventData,
+                occurredAt: e.occurredAt,
+                version: e.version
+            };
+        });
 
         await db.insert(events).values(values);
     }

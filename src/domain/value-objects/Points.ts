@@ -1,3 +1,5 @@
+import { ValidationError } from "../errors/index.ts";
+
 export class Points {
     readonly #value: number;
 
@@ -7,10 +9,10 @@ export class Points {
 
     static create(amount: number): Points {
         if (!Number.isInteger(amount)) {
-            throw new Error("Points must be an integer");
+            throw new ValidationError("Points must be an integer");
         }
         if (amount < 0) {
-            throw new Error("Points cannot be negative");
+            throw new ValidationError("Points cannot be negative");
         }
         return new Points(amount);
     }
@@ -38,7 +40,7 @@ export class Points {
     subtract(other: Points): Points {
         const result = this.#value - other.#value;
         if (result < 0) {
-            throw new Error("Insufficient points");
+            throw new ValidationError("Insufficient points");
         }
         return new Points(result);
     }

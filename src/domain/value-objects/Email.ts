@@ -1,4 +1,5 @@
 import type { IEmailValidator } from "./IEmailValidator.ts";
+import { ValidationError } from "../errors/index.ts";
 
 export class Email {
     readonly #value: string;
@@ -11,17 +12,17 @@ export class Email {
         const trimmed = input.trim();
         
         if (!trimmed) {
-            throw new Error("Email is required");
+            throw new ValidationError("Email is required");
         }
         
         if (trimmed.length > 254) {
-            throw new Error("Email exceeds maximum length of 254 characters");
+            throw new ValidationError("Email exceeds maximum length of 254 characters");
         }
         
         const normalized = trimmed.toLowerCase();
         
         if (!validator.isValid(normalized)) {
-            throw new Error("Invalid email format");
+            throw new ValidationError("Invalid email format");
         }
 
         return new Email(normalized);
@@ -29,18 +30,18 @@ export class Email {
 
     static restore(value: string): Email {
         if (!value || !value.trim()) {
-            throw new Error("Email is required");
+            throw new ValidationError("Email is required");
         }
         
         const trimmed = value.trim().toLowerCase();
         
         if (trimmed.length > 254) {
-            throw new Error("Email exceeds maximum length of 254 characters");
+            throw new ValidationError("Email exceeds maximum length of 254 characters");
         }
         
         const emailRegex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
         if (!emailRegex.test(trimmed)) {
-            throw new Error("Invalid email format");
+            throw new ValidationError("Invalid email format");
         }
         
         return new Email(trimmed);

@@ -1,73 +1,68 @@
-import { describe, test, expect, beforeEach } from "bun:test";
+import { describe, test, expect } from "bun:test";
 import { RateLimiter } from "../src/shared/security/RateLimiter.ts";
 import { InputSanitizer, generateCSRFToken, hashSensitiveData } from "../src/shared/security/Sanitizer.ts";
 
 describe("RateLimiter", () => {
-    let globalCounter = 0;
-    
-    function uniqueId(prefix: string): string {
-        return `${prefix}-${++globalCounter}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    }
-    
-    test("should allow first request", () => {
-        const limiter = new RateLimiter(1000, 3);
-        const result = limiter.check(uniqueId("user1"));
+    test("should allow first request", async () => {
+        const limiter = new RateLimiter({ windowMs: 1000, maxRequests: 3 });
+        const result = await limiter.check("user1");
         expect(result.allowed).toBe(true);
         expect(result.remaining).toBe(2);
     });
     
-    test("should allow requests within limit", () => {
-        const limiter = new RateLimiter(1000, 3);
-        const userId = uniqueId("user2");
-        limiter.check(userId);
-        limiter.check(userId);
-        const result = limiter.check(userId);
+    test("should allow requests within limit", async () => {
+        const limiter = new RateLimiter({ windowMs: 1000, maxRequests: 3 });
+        const userId = "user2";
+        await limiter.check(userId);
+        await limiter.check(userId);
+        const result = await limiter.check(userId);
         
         expect(result.allowed).toBe(true);
         expect(result.remaining).toBe(0);
     });
     
-    test("should block requests over limit", () => {
-        const limiter = new RateLimiter(1000, 3);
-        const userId = uniqueId("user3");
-        limiter.check(userId);
-        limiter.check(userId);
-        limiter.check(userId);
-        const result = limiter.check(userId);
+    test("should block requests over limit", async () => {
+        const limiter = new RateLimiter({ windowMs: 1000, maxRequests: 3 });
+        const userId = "user3";
+        await limiter.check(userId);
+        await limiter.check(userId);
+        await limiter.check(userId);
+        const result = await limiter.check(userId);
         
         expect(result.allowed).toBe(false);
         expect(result.remaining).toBe(0);
     });
     
-    test("should track different users separately", () => {
-        const limiter = new RateLimiter(1000, 3);
-        const userA = uniqueId("userA");
-        const userB = uniqueId("userB");
+    test("should track different users separately", async () => {
+        const limiter = new RateLimiter({ windowMs: 1000, maxRequests: 3 });
+        const userA = "userA";
+        const userB = "userB";
         
-        const resultA1 = limiter.check(userA);
+        const resultA1 = await limiter.check(userA);
         expect(resultA1.remaining).toBe(2);
         
-        limiter.check(userA);
+        await limiter.check(userA);
         
-        const resultB1 = limiter.check(userB);
+        const resultB1 = await limiter.check(userB);
         expect(resultB1.remaining).toBe(2);
         
-        const resultB2 = limiter.check(userB);
+        const resultB2 = await limiter.check(userB);
         expect(resultB2.remaining).toBe(1);
     });
     
     test("should reset after window expires", async () => {
-        const limiter = new RateLimiter(100, 2);
-        const resetId = uniqueId("reset");
+        const limiter = new RateLimiter({ windowMs: 100, maxRequests: 2 });
+        const resetId = "reset";
         
-        limiter.check(resetId);
-        limiter.check(resetId);
-        const blocked = limiter.check(resetId);
+        await limiter.check(resetId);
+        await limiter.check(resetId);
+        const blocked = await limiter.check(resetId);
         expect(blocked.allowed).toBe(false);
         
+        // Wait for window to expire
         await new Promise(resolve => setTimeout(resolve, 150));
         
-        const allowed = limiter.check(resetId);
+        const allowed = await limiter.check(resetId);
         expect(allowed.allowed).toBe(true);
     });
 });

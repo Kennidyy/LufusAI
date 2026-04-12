@@ -1,3 +1,6 @@
+import type { IUuidGenerator } from "../value-objects/IUuidGenerator.ts";
+import { EventType } from "./EventTypes.ts";
+
 export interface DomainEvent {
     eventId: string;
     eventType: string;
@@ -27,23 +30,24 @@ export abstract class AggregateRoot {
 
 export class UserCreatedEvent implements DomainEvent {
     readonly eventId: string;
-    readonly eventType = "UserCreated";
+    readonly eventType = EventType.UserCreated;
     readonly occurredAt: Date;
     readonly version = 1;
 
     constructor(
         public readonly aggregateId: string,
         public readonly email: string,
-        public readonly name: string
+        public readonly name: string,
+        private readonly uuidGenerator: IUuidGenerator
     ) {
-        this.eventId = crypto.randomUUID();
+        this.eventId = uuidGenerator.generate();
         this.occurredAt = new Date();
     }
 }
 
 export class PointsAddedEvent implements DomainEvent {
     readonly eventId: string;
-    readonly eventType = "PointsAdded";
+    readonly eventType = EventType.PointsAdded;
     readonly occurredAt: Date;
     readonly version = 1;
 
@@ -51,16 +55,17 @@ export class PointsAddedEvent implements DomainEvent {
         public readonly aggregateId: string,
         public readonly points: number,
         public readonly newBalance: number,
-        public readonly transactionId: string
+        public readonly transactionId: string,
+        private readonly uuidGenerator: IUuidGenerator
     ) {
-        this.eventId = crypto.randomUUID();
+        this.eventId = uuidGenerator.generate();
         this.occurredAt = new Date();
     }
 }
 
 export class PointsRemovedEvent implements DomainEvent {
     readonly eventId: string;
-    readonly eventType = "PointsRemoved";
+    readonly eventType = EventType.PointsRemoved;
     readonly occurredAt: Date;
     readonly version = 1;
 
@@ -68,16 +73,17 @@ export class PointsRemovedEvent implements DomainEvent {
         public readonly aggregateId: string,
         public readonly points: number,
         public readonly newBalance: number,
-        public readonly transactionId: string
+        public readonly transactionId: string,
+        private readonly uuidGenerator: IUuidGenerator
     ) {
-        this.eventId = crypto.randomUUID();
+        this.eventId = uuidGenerator.generate();
         this.occurredAt = new Date();
     }
 }
 
 export class PointsTransferredEvent implements DomainEvent {
     readonly eventId: string;
-    readonly eventType = "PointsTransferred";
+    readonly eventType = EventType.PointsTransferred;
     readonly occurredAt: Date;
     readonly version = 1;
 
@@ -85,24 +91,26 @@ export class PointsTransferredEvent implements DomainEvent {
         public readonly aggregateId: string,
         public readonly recipientId: string,
         public readonly points: number,
-        public readonly transactionId: string
+        public readonly transactionId: string,
+        private readonly uuidGenerator: IUuidGenerator
     ) {
-        this.eventId = crypto.randomUUID();
+        this.eventId = uuidGenerator.generate();
         this.occurredAt = new Date();
     }
 }
 
 export class UserDeletedEvent implements DomainEvent {
     readonly eventId: string;
-    readonly eventType = "UserDeleted";
+    readonly eventType = EventType.UserDeleted;
     readonly occurredAt: Date;
     readonly version = 1;
 
     constructor(
         public readonly aggregateId: string,
-        public readonly email: string
+        public readonly email: string,
+        private readonly uuidGenerator: IUuidGenerator
     ) {
-        this.eventId = crypto.randomUUID();
+        this.eventId = uuidGenerator.generate();
         this.occurredAt = new Date();
     }
 }

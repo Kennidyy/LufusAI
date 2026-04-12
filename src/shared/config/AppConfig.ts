@@ -4,11 +4,13 @@ export class AppConfig {
     readonly databaseUrl: string;
     readonly logLevel: string;
     readonly passwordPepper: string;
+    readonly redisUrl: string | undefined;
 
     private constructor() {
         this.databaseUrl = this.requireEnv("DATABASE_URL");
         this.logLevel = process.env.LOG_LEVEL || "INFO";
         this.passwordPepper = this.requireEnv("PASSWORD_PEPPER");
+        this.redisUrl = process.env.REDIS_URL;
     }
 
     private requireEnv(key: string): string {

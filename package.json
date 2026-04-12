@@ -27,9 +27,15 @@
   "type": "module",
   "dependencies": {
     "@inquirer/prompts": "^8.4.1",
+    "@types/axios": "^0.14.4",
+    "@types/redis": "^4.0.11",
+    "axios": "^1.15.0",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.45.2",
+    "elysia": "^1.4.28",
+    "ioredis": "^5.10.1",
     "postgres": "^3.4.9",
+    "redis": "^5.11.0",
     "validator": "^13.15.35"
   }
 }
