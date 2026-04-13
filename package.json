@@ -22,7 +22,9 @@
     "db:generate": "bun run drizzle-kit generate",
     "docker:up": "docker compose up -d postgres",
     "docker:push": "docker compose run --rm app bunx drizzle-kit push",
-    "docker:cli": "docker compose run --rm app bun run src/cli.ts"
+    "docker:cli": "docker compose run --rm app bun run src/cli.ts",
+    "desktop:build": "cd desktop && node build-views.mjs",
+    "desktop:dev": "cd desktop && node build-views.mjs && DATABASE_URL=postgresql://lufus:postgres@localhost:5432/lufus PASSWORD_PEPPER=f37ac06d968b09e55c0d2446bf18175d45f75051ea8ad83c2077006d22354fce ./node_modules/.bin/electron ."
   },
   "type": "module",
   "dependencies": {
