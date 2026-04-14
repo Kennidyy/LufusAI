@@ -1,6 +1,8 @@
 import { readFileSync, existsSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { spawn, ChildProcess } from 'child_process';
+import { app, BrowserWindow, ipcMain } from 'electron';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,50 +20,66 @@ if (existsSync(ENV_FILE)) {
   });
 }
 
-export { rootDir, ENV_FILE };
-
-import { app, BrowserWindow, ipcMain } from 'electron';
-
-const SESSION_FILE = path.join(rootDir, '.lufus-session');
-
 let mainWindow: BrowserWindow | null = null;
+let serverProcess: ChildProcess | null = null;
 
-let uuidGenerator: any;
-let userRepository: any;
-let emailValidator: any;
-let passwordHash: any;
-let sessionStore: any;
-let LoginUseCase: any;
-let LogoutUseCase: any;
-let GetCurrentUserUseCase: any;
-
-async function initDeps() {
-  if (uuidGenerator) return;
+async function startServer() {
+  if (serverProcess) return;
   
-  const { DrizzleUserRepository } = await import('@/infrastructure/persistence/repositories/DrizzleUserRepository.ts');
-  const { UuidGenerator } = await import('@/infrastructure/uuid/UuidGenerator.ts');
-  const { EmailValidator } = await import('@/infrastructure/validators/EmailValidator.ts');
-  const { Argon2NodePasswordHash } = await import('@/infrastructure/cryptography/Argon2NodePasswordHash.ts');
-  const { LoginUseCase: LC, LogoutUseCase: LOC, GetCurrentUserUseCase: GCU } = await import('@/application/use-cases/AuthUseCases.ts');
-  const { FileSessionStore } = await import('@/shared/security/SessionManager.ts');
+  console.log('Starting backend server...');
+  
+  const projectRoot = path.resolve(__dirname, '../../..');
+  const env = { ...process.env };
+  
+  if (existsSync(path.join(projectRoot, '.env'))) {
+    const envContent = readFileSync(path.join(projectRoot, '.env'), 'utf-8');
+    envContent.split('\n').forEach(line => {
+      const match = line.match(/^([^=]+)=(.*)$/);
+      if (match && !line.startsWith('#')) {
+        env[match[1].trim()] = match[2].trim();
+      }
+    });
+  }
+  
+  serverProcess = spawn('bun', ['run', 'src/server.ts'], {
+    cwd: projectRoot,
+    env,
+    stdio: 'pipe'
+  });
+  
+  serverProcess.stdout?.on('data', (data) => {
+    console.log(`Server: ${data}`);
+  });
+  
+  serverProcess.stderr?.on('data', (data) => {
+    console.error(`Server error: ${data}`);
+  });
+  
+  serverProcess.on('error', (err) => {
+    console.error('Failed to start server:', err);
+    serverProcess = null;
+  });
+  
+  await new Promise(resolve => setTimeout(resolve, 2000));
+}
 
-  uuidGenerator = new UuidGenerator();
-  userRepository = new DrizzleUserRepository(uuidGenerator);
-  emailValidator = new EmailValidator();
-  passwordHash = new Argon2NodePasswordHash();
-  sessionStore = new FileSessionStore();
-  LoginUseCase = LC;
-  LogoutUseCase = LOC;
-  GetCurrentUserUseCase = GCU;
+function stopServer() {
+  if (serverProcess) {
+    console.log('Stopping backend server...');
+    serverProcess.kill();
+    serverProcess = null;
+  }
 }
 
 app.whenReady().then(async () => {
-  await initDeps();
+  await startServer();
   
   mainWindow = new BrowserWindow({
     width: 420,
     height: 640,
-    resizable: false,
+    minWidth: 360,
+    minHeight: 500,
+    resizable: true,
     frame: false,
     backgroundColor: '#171717',
     webPreferences: {
@@ -79,81 +97,26 @@ app.whenReady().then(async () => {
   mainWindow.loadFile(path.join(__dirname, '../views/index.html'));
 
   ipcMain.handle('window:minimize', () => mainWindow?.minimize());
+  ipcMain.handle('window:maximize', () => {
+    if (mainWindow?.isMaximized()) {
+      mainWindow.unmaximize();
+    } else {
+      mainWindow?.maximize();
+    }
+  });
+  ipcMain.handle('window:fullscreen', () => {
+    mainWindow?.setFullScreen(!mainWindow?.isFullScreen());
+  });
   ipcMain.handle('window:close', () => mainWindow?.close());
-
-  ipcMain.handle('auth:login', async (_event, data) => {
-    try {
-      await initDeps();
-      const loginUseCase = new LoginUseCase(userRepository, passwordHash, sessionStore);
-      const result = await loginUseCase.execute({ email: data.email, password: data.password });
-
-      storeToken(result.token, {
-        userId: result.userId,
-        email: result.email,
-        name: result.name
-      });
-
-      return {
-        success: true,
-        message: 'Login bem-sucedido',
-        user: { id: result.userId, email: result.email, name: result.name }
-      };
-    } catch (e: any) {
-      return { success: false, message: e.message || 'Erro ao fazer login' };
-    }
-  });
-
-  ipcMain.handle('auth:get-session', async () => {
-    const token = getStoredToken();
-    if (!token) return { authenticated: false };
-
-    try {
-      await initDeps();
-      const getCurrentUserUseCase = new GetCurrentUserUseCase(sessionStore);
-      const user = getCurrentUserUseCase.execute(token);
-      return { authenticated: true, user };
-    } catch {
-      return { authenticated: false };
-    }
-  });
-
-  ipcMain.handle('auth:logout', async () => {
-    try {
-      await initDeps();
-      const token = getStoredToken();
-      if (token) {
-        const logoutUseCase = new LogoutUseCase(sessionStore);
-        logoutUseCase.execute(token);
-      }
-    } catch {}
-    return { success: true };
-  });
 
   app.setAboutPanelOptions({ applicationName: 'LufusAI', applicationVersion: '1.0.0' });
 });
 
-function storeToken(token: string, userData: { userId: string; email: string; name: string }): void {
-  try {
-    const fs = require('fs');
-    let sessions: Record<string, unknown> = {};
-    if (fs.existsSync(SESSION_FILE)) {
-      sessions = JSON.parse(fs.readFileSync(SESSION_FILE, 'utf-8'));
-    }
-    sessions[token] = { ...userData, createdAt: Date.now(), expiresAt: Date.now() + (7 * 24 * 60 * 60 * 1000) };
-    fs.writeFileSync(SESSION_FILE, JSON.stringify(sessions, null, 2));
-  } catch (e) {
-    console.error('Failed to store session:', e);
-  }
-}
+app.on('window-all-closed', () => {
+  stopServer();
+  app.quit();
+});
 
-function getStoredToken(): string | null {
-  try {
-    const fs = require('fs');
-    if (fs.existsSync(SESSION_FILE)) {
-      const data = fs.readFileSync(SESSION_FILE, 'utf-8');
-      const sessions = JSON.parse(data);
-      for (const token of Object.keys(sessions)) return token;
-    }
-  } catch {}
-  return null;
-}
+app.on('before-quit', () => {
+  stopServer();
+});
